@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="container">
+    {% for week in data %}
+    <h1>Week: {{ week }}</h1>
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <td scope="col" class="hideid">Breakfast</td>
+                <td scope="col">Lunch</td>
+                <td scope="col" class="hideid">Snack</td>
+                <td scope="col" class="hideid">Dinner</td>
+            </tr>
+        </thead>
+
+        {% for day in data[week] %}
+        <tbody>
+            <tr>
+                <td colspan="4" class="dayRow">{{ day }}</td>
+            </tr>
+            <tr>
+                <td>{{ data[week][day]['breakfast'] }}</td>
+                <td>{{ data[week][day]['lunch'] }}</td>
+                <td>{{ data[week][day]['snack'] }}</td>
+                <td>{{ data[week][day]['dinner'] }}</td>
+            </tr>
+        </tbody>
+        {% endfor %}
+    </table>
+    <div class="break""></div>
+    {% endfor %}
+</div>
+
+{% endblock %}

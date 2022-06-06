@@ -1,0 +1,11 @@
+body {
+    background-image: "cover_image.jpeg", repeat 0 0;
+}
+
+.break {
+    page-break-after: always;
+}
+
+.dayRow {
+    width: 100%;
+}
