@@ -152,7 +152,7 @@ def meals(user_id):
 
 
 @app.route('/users/<int:user_id>/meals/<int:mealplan_id>', methods=['PATCH', 'GET', 'DELETE'])
-def specmeal(user_id, mealplan_id):
+def specMeal(user_id, mealplan_id):
     meal = MealPlan.query.filter_by(user_id=user_id, id=mealplan_id).first_or_404()
     if request.method == 'GET':
         newObj = {
@@ -175,7 +175,7 @@ def specmeal(user_id, mealplan_id):
             db.session.commit()
             return jsonify('Deleted Successfully!'), 200
 
-    abort(401, description="You need to be logged in to do that!")
+    abort(403, description="You are not authorized to do that!")
 
 
 @app.route('/users/<int:user_id>/meals/<int:mealplan_id>/plans', methods=['POST', 'GET'])
@@ -223,7 +223,7 @@ def plans(user_id, mealplan_id):
     abort(401, description="You need to be logged in to do that!")
 
 @app.route('/users/<int:user_id>/meals/<int:mealplan_id>/plans/<int:plan_id>', methods=['PATCH', 'GET', 'DELETE'])
-def specMeal(user_id, mealplan_id, plan_id):
+def specPlan(user_id, mealplan_id, plan_id):
     _ = User.query.get_or_404(user_id)
     meal = MealPlan.query.filter_by(user_id=user_id, id=mealplan_id).first_or_404(description="Check your Meal ID.")
     plan = Meal.query.filter_by(mealplan_id=mealplan_id, id=plan_id).first_or_404(description='Check your Plan ID')
@@ -266,10 +266,10 @@ def specMeal(user_id, mealplan_id, plan_id):
             db.session.commit()
             return jsonify('Deleted Successfully'), 200
 
-    abort(401, 'You are not authorized to do that!')
+    abort(403, description='You are not authorized to do that')
 
 
-@app.route('/users/<int:user_id>/meals/<int:mealplan_id>/pdf')
+@app.route('/users/<int:user_id>/meals/<int:mealplan_id>/download')
 @jwt_required(locations='cookies')
 def downloadMeals(user_id, mealplan_id):
     user = User.query.get_or_404(user_id, description='That user does not exist!')
@@ -303,6 +303,8 @@ def downloadMeals(user_id, mealplan_id):
         pdfkit.from_string(rendered, output_path="output.pdf")
 
         return jsonify("Successfully")
+
+    abort(403, description='You are not authorized to do that')
 
 @app.route('/refresh/token')
 @jwt_required(refresh=True, locations='cookies')
