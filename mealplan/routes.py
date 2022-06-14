@@ -11,7 +11,6 @@ from flask_jwt_extended import (create_access_token, current_user,
                                 unset_jwt_cookies, create_refresh_token,
                                 set_refresh_cookies, verify_jwt_in_request)
 
-
 @app.route('/')
 @app.route('/home')
 def home():
@@ -273,7 +272,7 @@ def specPlan(user_id, mealplan_id, plan_id):
 @jwt_required(locations='cookies')
 def downloadMeals(user_id, mealplan_id):
     user = User.query.get_or_404(user_id, description='That user does not exist!')
-    _ = MealPlan.query.filter_by(user_id=user_id, id=mealplan_id).first_or_404()
+    mealplan = MealPlan.query.filter_by(user_id=user_id, id=mealplan_id).first_or_404(description='That meal plan does not exist')
     if current_user == user:
         plans = Meal.query.filter_by(mealplan_id=mealplan_id).order_by(Meal.weekInt.asc(), Meal.dayInt.asc()).all()
         data = {}
@@ -298,11 +297,12 @@ def downloadMeals(user_id, mealplan_id):
 
                 data[plan.week] = {plan.day: day}
 
-        cover = render_template('cover.html')
-        rendered = render_template('pdf.html', data=data)
-        pdfkit.from_string(rendered, output_path="output.pdf")
+        name = mealplan.name
+        introduction = mealplan.introduction
+        body = render_template('pdf.html', data=data, user=user, name=name, introduction=introduction)
+        rendered = pdfkit.from_string(input=body, output_path="output.pdf")
 
-        return jsonify("Successfully")
+        return jsonify("Successful")
 
     abort(403, description='You are not authorized to do that')
 

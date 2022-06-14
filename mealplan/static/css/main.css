@@ -1,5 +1,5 @@
-body {
-    background-image: "cover_image.jpeg", repeat 0 0;
+.main {
+    background-image: url('https://i0.wp.com/images-prod.healthline.com/hlcmsresource/images/AN_images/healthy-eating-ingredients-1296x728-header.jpg?w=1575')
 }
 
 .break {
@@ -8,4 +8,23 @@ body {
 
 .dayRow {
     width: 100%;
+}
+
+.box {
+    margin: 150px 80px 0px;
+    padding: 80px;
+}
+
+.middle {
+    background-color: darkgrey;
+    padding: 100px;
+}
+
+.info {
+    color:darkslategray;
+    font-size: small;
+}
+
+.tog {
+    padding: 0px;
 }

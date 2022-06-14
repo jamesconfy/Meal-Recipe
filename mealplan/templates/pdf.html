@@ -2,15 +2,44 @@
 {% block content %}
 
 <div class="container">
+    <div class="main">
+        <div class="box">
+            <section class="middle">
+                <h1> {{ name }} </h1>
+                <h1> MEAL PLAN </h1>
+                <hr>
+                <h3>Prepared For: </h3>
+                <h2> {{ user.firstName }} {{ user.lastName }} </h2>
+            </section>
+        </div>
+    </div>
+    <hr>
+    <div>
+        <section>
+            <div class="info"> INFORMATION ABOUT THIS MEAL PLAN OR OTHER ENQUIRIES </div>
+            <div class="info"> <a href="mailto:bobdence@live.com"> bobdence@live.com </a> <a href="https://wa.me/+2348149795370">  +234 (0) 8149795370 </a> </div>
+            <div class="info"> James: <a href="mailto:bobdence@gmail.com"> bobdence@gmail.com </a> </div>
+        </section>
+    </div>
+    <div class="break""></div>
+
+    <div class="box">
+        <section>
+            <h2>Introduction</h2>
+            <article> {{ introduction }} </article>
+        </section>
+    </div>
+    <div class="break""></div>
+
     {% for week in data %}
     <h1>Week: {{ week }}</h1>
     <table class="table table-striped table-bordered">
         <thead>
             <tr>
-                <td scope="col" class="hideid">Breakfast</td>
+                <td scope="col">Breakfast</td>
                 <td scope="col">Lunch</td>
-                <td scope="col" class="hideid">Snack</td>
-                <td scope="col" class="hideid">Dinner</td>
+                <td scope="col">Snack</td>
+                <td scope="col">Dinner</td>
             </tr>
         </thead>
 

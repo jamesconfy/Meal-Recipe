@@ -28,6 +28,7 @@ class MealPlan(db.Model):
     __tablename__ = 'mealplan'
     id = Column(Integer, primary_key=True)
     name = Column(String(120), nullable=False)
+    #introduction = Column(Text, nullable=False)
     dateCreated = Column(DateTime(), default=datetime.utcnow)
     user_id = Column(Integer, ForeignKey('user.id'))
     mealplan = db.relationship('Meal', backref='plan', lazy=True)
@@ -36,9 +37,10 @@ class Meal(db.Model):
     __tablename__ = 'meal'
     id = Column(Integer, primary_key=True)
     week = Column(String(120), nullable=False)
+    day = Column(String(120), nullable=False)
     dayInt = Column(Integer, nullable=False)
     weekInt = Column(Integer, nullable=False)
-    day = Column(String(120), nullable=False)
+    
     breakfast = Column(Text, nullable=True)
     lunch = Column(Text, nullable=True)
     snack = Column(Text, nullable=True)
