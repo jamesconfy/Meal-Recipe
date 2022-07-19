@@ -4,12 +4,20 @@ import pdfkit
 from flask import current_app as app, jsonify, request, abort, render_template
 from werkzeug.exceptions import HTTPException
 from mealplan import bcrypt, db
-from mealplan.models import User, MealPlan, Meal
+from mealplan.models import User, MealPlan, Meal, UserSchema, MealPlanSchema, MealSchema
 from mealplan.utils import listOfWeeks, listOfDays
 from flask_jwt_extended import (create_access_token, current_user,
                                 jwt_required, set_access_cookies,
                                 unset_jwt_cookies, create_refresh_token,
                                 set_refresh_cookies, verify_jwt_in_request)
+
+user_schema = UserSchema()
+users_schema = UserSchema(many=True)
+mealplan_schema = MealPlanSchema()
+mealplans_schema = MealPlanSchema(many=True)
+meal_schema = MealSchema()
+meals_schema = MealSchema(many=True)
+
 
 @app.route('/')
 @app.route('/home')
@@ -27,7 +35,8 @@ def register():
                 abort(409, description='This email is taken!')
             firstName = request.json.get('first name')
             lastName = request.json.get('last name')
-            password = bcrypt.generate_password_hash(request.json.get('password')).decode('utf-8')
+            password = bcrypt.generate_password_hash(
+                request.json.get('password')).decode('utf-8')
 
             user = User(firstName=firstName,
                         lastName=lastName,
@@ -39,6 +48,7 @@ def register():
             return jsonify(user.__repr__())
         else:
             return abort(400, description='Content-Type needs to be JSON')
+
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -54,35 +64,38 @@ def login():
             user = User.query.filter_by(
                 email=request.json.get('email')).one_or_none()
 
-            if user and bcrypt.check_password_hash(user.password, request.json.get('password')):
-                access_token = create_access_token(identity=user, expires_delta=timedelta(hours=1))
-                refresh_token = create_refresh_token(identity=user, expires_delta=timedelta(days=2))
+            if user and bcrypt.check_password_hash(
+                    user.password, request.json.get('password')):
+                access_token = create_access_token(
+                    identity=user, expires_delta=timedelta(hours=1))
+                refresh_token = create_refresh_token(
+                    identity=user, expires_delta=timedelta(days=2))
 
                 response = jsonify({
                     "msg": "logged in successfully.",
                     "access token": access_token,
                     "refresh token": refresh_token
-                    })
+                })
                 set_access_cookies(response, access_token)
                 set_refresh_cookies(response, refresh_token)
                 return response, 200
             else:
                 abort(401, description='Email or Password is incorrect')
 
+
 @app.route('/users', methods=['GET'])
 def users():
     users = User.query.all()
-    for user in users:
-        print(user.__repr__())
+    result = users_schema.dump(users)
 
-    return jsonify('Successful')
+    return jsonify(result), 200
+
 
 @app.route('/users/<int:user_id>', methods=['GET', 'PATCH', 'DELETE'])
 def user(user_id):
     user = User.query.get_or_404(user_id)
     if request.method == 'GET':
-        print(user.__repr__())
-        return jsonify('Checking')
+        return jsonify(user_schema.dump(user))
 
     verify_jwt_in_request(locations='cookies')
     if request.method == 'PATCH':
@@ -113,7 +126,7 @@ def user(user_id):
             response = jsonify({"msg": "Successfully."})
             unset_jwt_cookies(response)
             return response
-            
+
     abort(403, description="You are not authorized to do that.")
 
 
@@ -121,26 +134,26 @@ def user(user_id):
 def meals(user_id):
     user = User.query.get_or_404(user_id, description='User not found!')
     if request.method == 'GET':
-        allplans = []
         plans = MealPlan.query.filter_by(user_id=user_id).all()
         if plans:
-            for plan in plans:
-                newObj = {
-                   "Name": plan.name,
-                   "Date Created": plan.dateCreated
-                }
+            result1 = mealplans_schema.dump(plans)
+            return jsonify(result1), 200
 
-                allplans.append(newObj)
-        return jsonify(allplans), 200
+        else:
+            return jsonify(
+                description='You do not have a valid meal plan'), 200
 
     verify_jwt_in_request(locations='cookies')
     if request.method == 'POST':
         if current_user == user:
             if request.is_json:
                 name = request.json.get('name')
-                check = MealPlan.query.filter_by(user_id=current_user.id, name=name).one_or_none()
+                check = MealPlan.query.filter_by(user_id=current_user.id,
+                                                 name=name).one_or_none()
                 if check:
-                    abort(409, description='You already have a meal plan with that name.')
+                    abort(409,
+                          description=
+                          'You already have a meal plan with that name.')
 
                 mealplan = MealPlan(name=name, user_id=current_user.id)
                 db.session.add(mealplan)
@@ -150,18 +163,16 @@ def meals(user_id):
     abort(401, description="You need to be logged in to do that!")
 
 
-@app.route('/users/<int:user_id>/meals/<int:mealplan_id>', methods=['PATCH', 'GET', 'DELETE'])
+@app.route('/users/<int:user_id>/meals/<int:mealplan_id>',
+           methods=['PATCH', 'GET', 'DELETE'])
 def specMeal(user_id, mealplan_id):
-    meal = MealPlan.query.filter_by(user_id=user_id, id=mealplan_id).first_or_404()
+    meal = MealPlan.query.filter_by(user_id=user_id,
+                                    id=mealplan_id).first_or_404()
     if request.method == 'GET':
-        newObj = {
-                "Name": meal.name
-            }
-
-        return jsonify(newObj), 200
+        return jsonify(mealplan_schema.dump(meal))
 
     verify_jwt_in_request(locations='cookies')
-    if current_user == meal.chef:    
+    if current_user == meal.chef:
         if request.method == 'PATCH' and request.is_json:
             name = request.json.get('name')
             meal.name = name
@@ -177,29 +188,22 @@ def specMeal(user_id, mealplan_id):
     abort(403, description="You are not authorized to do that!")
 
 
-@app.route('/users/<int:user_id>/meals/<int:mealplan_id>/plans', methods=['POST', 'GET'])
+@app.route('/users/<int:user_id>/meals/<int:mealplan_id>/plans',
+           methods=['POST', 'GET'])
 def plans(user_id, mealplan_id):
-    meal = MealPlan.query.filter_by(user_id=user_id, id=mealplan_id).first_or_404()
+    meal = MealPlan.query.filter_by(user_id=user_id,
+                                    id=mealplan_id).first_or_404()
     if request.method == 'GET':
-        allPlans = []
-        plans = Meal.query.filter_by(mealplan_id=mealplan_id).order_by(Meal.weekInt.asc(), Meal.dayInt.asc()).all()
+        plans = Meal.query.filter_by(mealplan_id=mealplan_id).order_by(
+            Meal.weekInt.asc(), Meal.dayInt.asc()).all()
         if plans:
-            for plan in plans:
-                newObj = {
-                    "Day": plan.day,
-                    "Week": plan.week,
-                    "Breakfast": plan.breakfast,
-                    "Lunch": plan.lunch,
-                    "Snack": plan.snack,
-                    "Dinner": plan.dinner,
- #                   "Date Created": plan.dateCreated
-                }
-
-                allPlans.append(newObj)
-        return jsonify(allPlans), 200
+            result = meals_schema.dump(plans)
+            return jsonify(result), 200
+        else:
+            return jsonify(description='No meal'), 200
 
     verify_jwt_in_request(locations='cookies')
-    if current_user == meal.chef:    
+    if current_user == meal.chef:
         if request.method == 'POST' and request.is_json:
             day = request.json.get('day')
             dayInt = listOfDays.get(day)
@@ -210,32 +214,45 @@ def plans(user_id, mealplan_id):
             snack = request.json.get('snack', None)
             dinner = request.json.get('dinner', None)
 
-            check = Meal.query.filter_by(mealplan_id=mealplan_id, day=day, week=week).one_or_none()
+            check = Meal.query.filter_by(mealplan_id=mealplan_id,
+                                         day=day,
+                                         week=week).one_or_none()
             if check:
-                abort(409, description='You already have a meal plan for this day, you can edit it though, if that is what you want!')
+                abort(
+                    409,
+                    description=
+                    'You already have a meal plan for this day, you can edit it though, if that is what you want!'
+                )
 
-            meal = Meal(week=week, day=day, breakfast=breakfast, lunch=lunch, snack=snack, dinner=dinner, dayInt=dayInt, weekInt=weekInt, mealplan_id=mealplan_id)
+            meal = Meal(week=week,
+                        day=day,
+                        breakfast=breakfast,
+                        lunch=lunch,
+                        snack=snack,
+                        dinner=dinner,
+                        dayInt=dayInt,
+                        weekInt=weekInt,
+                        mealplan_id=mealplan_id)
             db.session.add(meal)
             db.session.commit()
             return jsonify('Added Successfully'), 200
 
     abort(401, description="You need to be logged in to do that!")
 
-@app.route('/users/<int:user_id>/meals/<int:mealplan_id>/plans/<int:plan_id>', methods=['PATCH', 'GET', 'DELETE'])
+
+@app.route('/users/<int:user_id>/meals/<int:mealplan_id>/plans/<int:plan_id>',
+           methods=['PATCH', 'GET', 'DELETE'])
 def specPlan(user_id, mealplan_id, plan_id):
     _ = User.query.get_or_404(user_id)
-    meal = MealPlan.query.filter_by(user_id=user_id, id=mealplan_id).first_or_404(description="Check your Meal ID.")
-    plan = Meal.query.filter_by(mealplan_id=mealplan_id, id=plan_id).first_or_404(description='Check your Plan ID')
+    meal = MealPlan.query.filter_by(
+        user_id=user_id,
+        id=mealplan_id).first_or_404(description="Check your Meal ID.")
+    plan = Meal.query.filter_by(
+        mealplan_id=mealplan_id,
+        id=plan_id).first_or_404(description='Check your Plan ID')
     if request.method == 'GET':
-        newObj = {
-            "Day": plan.day,
-            "Week": plan.week,
-            "Breakfast": plan.breakfast,
-            "Lunch": plan.lunch,
-            "Snack": plan.snack,
-            "Dinner": plan.dinner
-        }
-        return jsonify(newObj), 200
+        result = meal_schema.dump(plan)
+        return jsonify(result), 200
 
     verify_jwt_in_request(locations='cookies')
     if current_user == meal.chef:
@@ -271,10 +288,14 @@ def specPlan(user_id, mealplan_id, plan_id):
 @app.route('/users/<int:user_id>/meals/<int:mealplan_id>/download')
 @jwt_required(locations='cookies')
 def downloadMeals(user_id, mealplan_id):
-    user = User.query.get_or_404(user_id, description='That user does not exist!')
-    mealplan = MealPlan.query.filter_by(user_id=user_id, id=mealplan_id).first_or_404(description='That meal plan does not exist')
+    user = User.query.get_or_404(user_id,
+                                 description='That user does not exist!')
+    mealplan = MealPlan.query.filter_by(
+        user_id=user_id, id=mealplan_id).first_or_404(
+            description='That meal plan does not exist')
     if current_user == user:
-        plans = Meal.query.filter_by(mealplan_id=mealplan_id).order_by(Meal.weekInt.asc(), Meal.dayInt.asc()).all()
+        plans = Meal.query.filter_by(mealplan_id=mealplan_id).order_by(
+            Meal.weekInt.asc(), Meal.dayInt.asc()).all()
         data = {}
         for plan in plans:
             if plan.week in data:
@@ -299,27 +320,33 @@ def downloadMeals(user_id, mealplan_id):
 
         name = mealplan.name
         introduction = mealplan.introduction
-        body = render_template('pdf.html', data=data, user=user, name=name, introduction=introduction)
+        body = render_template('pdf.html',
+                               data=data,
+                               user=user,
+                               name=name,
+                               introduction=introduction)
         rendered = pdfkit.from_string(input=body, output_path="output.pdf")
 
         return jsonify("Successful")
 
     abort(403, description='You are not authorized to do that')
 
+
 @app.route('/refresh/token')
 @jwt_required(refresh=True, locations='cookies')
 def refreshToken():
-    access_token = create_access_token(identity=current_user, expires_delta=timedelta(minutes=30))
+    access_token = create_access_token(identity=current_user,
+                                       expires_delta=timedelta(minutes=30))
     #refresh_token = create_refresh_token(identity=current_user, expires_delta=timedelta(days=2))
 
     response = jsonify({
-                "msg": "access token refreshed.",
-                "access token": access_token,
-#               "refresh token": refresh_token,
-                "email": current_user.email
-            })
+        "msg": "access token refreshed.",
+        "access token": access_token,
+        #               "refresh token": refresh_token,
+        "email": current_user.email
+    })
     set_access_cookies(response, access_token)
-   # set_refresh_cookies(response, refresh_token)
+    # set_refresh_cookies(response, refresh_token)
     return response
 
 
