@@ -1,0 +1,119 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Meal Recipe"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Default"
+    },
+    {
+      "name": "Users"
+    }
+  ],
+  "paths": {
+    "/home": {
+      "get": {
+        "tags": ["Default"],
+        "summary": "Home route",
+        "description": "Returns JSON if site is up and running",
+        "responses": {
+          "200": {
+            "description": "OK!",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "value": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "tags": ["Users"],
+        "summary": "Login",
+        "description": "Route to login a user",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "msg": {
+                      "type": "string"
+                    },
+                    "access token": {
+                      "type": "string"
+                    },
+                    "refresh token": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/register": {
+      "post": {
+        "tags": ["Users"],
+        "summary": "Register a user",
+        "description": "Route to register a user",
+        "requestBody": {
+          "description": "Input your credentials to be registered",
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": ["email", "password", "first name", "last name"],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password"
+                  },
+                  "first name": {
+                    "type": "string"
+                  },
+                  "last name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
