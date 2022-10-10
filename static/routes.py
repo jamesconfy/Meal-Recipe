@@ -154,6 +154,35 @@ def login():
 
 @app.route('/users', methods=['GET'])
 def users():
+    """
+        @api [get] /users
+        tags: [Users]
+        description: Return list of users
+        summary: Users route
+        responses:
+            200:
+                description: OK
+                content:
+                    application/json:
+                        schema:
+                            type: array
+                            items:
+                                type: object
+                                properties:
+                                    ID:
+                                        type: integer
+                                        format: int32
+                                    First Name:
+                                        type: string
+                                    Last Name:
+                                        type: string
+                                    Email:
+                                        type: string
+                                        format: email
+                                    Date Created:
+                                        type: string
+                                        format: date
+    """
     users = User.query.all()
     result = users_schema.dump(users)
 
@@ -164,11 +193,70 @@ def users():
 def user(user_id):
     user = User.query.get_or_404(user_id)
     if request.method == 'GET':
+        """
+            @api [get] /users/{user_id}
+            tags: [Users]
+            description: Return the values of a specific user
+            summary: Get a specific user
+            parameters:
+                - (path) user_id* {integer:int32} User ID
+            responses:
+                200:
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                properties:
+                                    ID:
+                                        type: integer
+                                        format: int32
+                                    First Name:
+                                        type: string
+                                    Last Name:
+                                        type: string
+                                    Email:
+                                        type: string
+                                        format: email
+                                    Date Created:
+                                        type: string
+                                        format: date
+        """
         return jsonify(user_schema.dump(user))
 
     verify_jwt_in_request(locations='cookies')
-    if request.method == 'PATCH':
-        if current_user == user:
+    if current_user == user:
+        if request.method == 'PATCH':
+            """
+                @api [patch] /users/{user_id}
+                tags: [Users]
+                description: Update the details of a specific user
+                summary: Update user
+                parameters:
+                    - (path) user_id* {integer:int32} User ID
+                requestBody:
+                    description: Input your updated details
+                    content:
+                        application/json:
+                            schema:
+                                properties:
+                                    email:
+                                        type: string
+                                        format: email
+                                    first name:
+                                        type: string
+                                    last name:
+                                        type: string
+                                    
+                responses:
+                    200:
+                        description: OK
+                        content:
+                            application/json:
+                                schema:
+                                    properties:
+                                        msg:
+                                            type: string
+            """
             if request.is_json:
                 email = request.json.get('email')
                 if User.query.filter_by(email=email).first():
@@ -185,11 +273,26 @@ def user(user_id):
                     user.lastName = lastName
 
                 db.session.commit()
-                print(current_user)
-                return jsonify('Updated Successfully!'), 200
+                return jsonify({"msg": 'Updated Successfully!'}), 200
 
-    if request.method == 'DELETE':
-        if current_user == user:
+        if request.method == 'DELETE':
+            """
+                @api [delete] /users/{user_id}
+                description: Delete a specific user
+                summary: Delete user
+                tags: [Users]
+                parameters:
+                    - (path) user_id* {integer:int32} User ID
+                responses:
+                    200:
+                        description: OK
+                        content:
+                            application/json:
+                                schema:
+                                    properties:
+                                        msg:
+                                            type: string
+            """
             db.session.delete(user)
             db.session.commit()
             response = jsonify({"msg": "Successfully."})
