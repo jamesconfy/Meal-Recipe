@@ -8,6 +8,7 @@ servers:
 tags:
   - name: Default
   - name: Users
+  - name: Meals
 paths:
   "/home":
     get:
