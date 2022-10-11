@@ -3,7 +3,6 @@ from sqlalchemy import Column, Integer, String, ForeignKey, Text, DateTime
 from datetime import datetime
 from marshmallow import Schema, fields
 
-
 @jwt.user_identity_loader
 def user_identity_lookup(user):
     return user.id
@@ -24,7 +23,6 @@ class User(db.Model):
     dateCreated = Column(DateTime(), default=datetime.utcnow)
     chef = db.relationship('MealPlan', backref='chef', lazy=True)
 
-
 class UserSchema(Schema):
     id = fields.Str(data_key='ID')
     firstName = fields.Str(data_key='First Name')
@@ -37,16 +35,15 @@ class MealPlan(db.Model):
     __tablename__ = 'mealplan'
     id = Column(Integer, primary_key=True)
     name = Column(String(120), nullable=False)
-    #introduction = Column(Text, nullable=False)
+    introduction = Column(Text, nullable=False)
     dateCreated = Column(DateTime(), default=datetime.utcnow)
     user_id = Column(Integer, ForeignKey('user.id'))
     mealplan = db.relationship('Meal', backref='plan', lazy=True)
 
-
 class MealPlanSchema(Schema):
     id = fields.Str(data_key='ID')
     name = fields.Str(data_key='Name')
-    #introduction = fields.Str(data_key='Introduction')
+    introduction = fields.Str(data_key='Introduction')
     dateCreated = fields.Str(data_key='Date Created')
     user = fields.Nested(UserSchema)
 
@@ -65,7 +62,6 @@ class Meal(db.Model):
     dinner = Column(Text, nullable=True)
     dateCreated = Column(DateTime, default=datetime.utcnow)
     mealplan_id = Column(Integer, ForeignKey('mealplan.id'))
-
 
 class MealSchema(Schema):
     id = fields.Str(data_key='ID')

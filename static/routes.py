@@ -54,22 +54,7 @@ def register():
                 content:
                     application/json:
                         schema:
-                            required:
-                                - email
-                                - password
-                                - first name
-                                - last name
-                            properties:
-                                email:
-                                    type: string
-                                    format: email
-                                password:
-                                    type: string
-                                    format: password
-                                first name:
-                                    type: string
-                                last name:
-                                    type: string
+                            "$ref": "#/components/schemas/BaseUser"
             responses:
                 200:
                     description: OK
@@ -114,19 +99,19 @@ def login():
             tags: [Users]
             summary: Login
             description: Route to login a user
+            requestBody:
+                description: Provide credentials to be logged in
+                content:
+                    application/json:
+                        schema:
+                            "$ref": "#/components/schemas/Login"
             responses:
                 200:
                     description: OK
                     content:
                         application/json:
                             schema:
-                                properties:
-                                    msg:
-                                        type: string
-                                    access token:
-                                        type: string
-                                    refresh token:
-                                        type: string
+                                "$ref": "#/components/schemas/Token"
 
         """
         if request.is_json:
@@ -167,21 +152,7 @@ def users():
                         schema:
                             type: array
                             items:
-                                type: object
-                                properties:
-                                    ID:
-                                        type: integer
-                                        format: int32
-                                    First Name:
-                                        type: string
-                                    Last Name:
-                                        type: string
-                                    Email:
-                                        type: string
-                                        format: email
-                                    Date Created:
-                                        type: string
-                                        format: date
+                                "$ref": "#/components/schemas/Users"
     """
     users = User.query.all()
     result = users_schema.dump(users)
@@ -199,27 +170,14 @@ def user(user_id):
             description: Return the values of a specific user
             summary: Get a specific user
             parameters:
-                - (path) user_id* {integer:int32} User ID
+                - "$ref": "#/components/parameters/user_id"
             responses:
                 200:
                     description: OK
                     content:
                         application/json:
                             schema:
-                                properties:
-                                    ID:
-                                        type: integer
-                                        format: int32
-                                    First Name:
-                                        type: string
-                                    Last Name:
-                                        type: string
-                                    Email:
-                                        type: string
-                                        format: email
-                                    Date Created:
-                                        type: string
-                                        format: date
+                                "$ref": "#/components/schemas/Users"
         """
         return jsonify(user_schema.dump(user))
 
@@ -231,6 +189,7 @@ def user(user_id):
                 tags: [Users]
                 description: Update the details of a specific user
                 summary: Update user
+                security: [{BearerAuth: []}]
                 parameters:
                     - (path) user_id* {integer:int32} User ID
                 requestBody:
@@ -238,15 +197,7 @@ def user(user_id):
                     content:
                         application/json:
                             schema:
-                                properties:
-                                    email:
-                                        type: string
-                                        format: email
-                                    first name:
-                                        type: string
-                                    last name:
-                                        type: string
-                                    
+                                "$ref": "#/components/schemas/Users"   
                 responses:
                     200:
                         description: OK
@@ -278,9 +229,10 @@ def user(user_id):
         if request.method == 'DELETE':
             """
                 @api [delete] /users/{user_id}
+                tags: [Users]
                 description: Delete a specific user
                 summary: Delete user
-                tags: [Users]
+                security: [{BearerAuth: []}]
                 parameters:
                     - (path) user_id* {integer:int32} User ID
                 responses:
@@ -306,6 +258,23 @@ def user(user_id):
 def meals(user_id):
     user = User.query.get_or_404(user_id, description='User not found!')
     if request.method == 'GET':
+        """
+            @api [get] /users/{user_id}/meals
+            tags: [Meals]
+            description: Get all the meals recipe a user has
+            summary: Total meals
+            parameters:
+                - "$ref": "#/components/parameters/user_id"
+            responses:
+                200:
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    "$ref": "#/components/schemas/Meals"                                    
+        """
         plans = MealPlan.query.filter_by(user_id=user_id).all()
         if plans:
             result1 = mealplans_schema.dump(plans)
@@ -317,6 +286,30 @@ def meals(user_id):
 
     verify_jwt_in_request(locations='cookies')
     if request.method == 'POST':
+        """
+            @api [post] /users/{user_id}/meals
+            tags: [Meals]
+            description: Add a meal recipe to a user's account
+            summary: Add meal
+            security: [{BearerAuth: []}]
+            parameters:
+                - "$ref": "#/components/parameters/user_id"
+            requestBody:
+                description: Enter the details of meal
+                content:
+                    application/json:
+                        schema:
+                            "$ref": "#/components/schemas/BaseMeal"
+            responses:
+                200:
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                properties:
+                                    msg:
+                                        type: string
+        """
         if current_user == user:
             if request.is_json:
                 name = request.json.get('name')
@@ -330,29 +323,88 @@ def meals(user_id):
                 mealplan = MealPlan(name=name, user_id=current_user.id)
                 db.session.add(mealplan)
                 db.session.commit()
-                return jsonify('Added Successfully'), 200
+                return jsonify({'msg': 'Added Successfully'}), 200
 
     abort(401, description="You need to be logged in to do that!")
 
 
-@app.route('/users/<int:user_id>/meals/<int:mealplan_id>',
-           methods=['PATCH', 'GET', 'DELETE'])
+@app.route('/users/<int:user_id>/meals/<int:mealplan_id>', methods=['PATCH', 'GET', 'DELETE'])
 def specMeal(user_id, mealplan_id):
-    meal = MealPlan.query.filter_by(user_id=user_id,
-                                    id=mealplan_id).first_or_404()
+    meal = MealPlan.query.filter_by(user_id=user_id, id=mealplan_id).first_or_404()
     if request.method == 'GET':
+        """
+            @api [get] /users/{user_id}/meals/{mealplan_id}
+            tags: [Meals]
+            description: Get a the specific meal recipe
+            summary: Get meal recipe
+            parameters:
+                - "$ref": "#/components/parameters/user_id"
+                - "$ref": "#/components/parameters/mealplan_id"
+            responses:
+                200:
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                "$ref": "#/components/schemas/Meals"
+        """
         return jsonify(mealplan_schema.dump(meal))
 
     verify_jwt_in_request(locations='cookies')
     if current_user == meal.chef:
         if request.method == 'PATCH' and request.is_json:
+            """
+                @api [patch] /users/{user_id}/meals/{mealplan_id}
+                tags: [Meals]
+                description: Update a specific meal recipe
+                summary: Update meal recipe
+                security: [{BearerAuth: []}]
+                parameters:
+                    - "$ref": "#/components/parameters/user_id"
+                    - "$ref": "#/components/parameters/mealplan_id"
+                requestBody:
+                    description: Enter the new name of the meal recipe
+                    content:
+                        application/json:
+                            schema:
+                                "$ref": "#/components/schemas/BaseMeal"
+                responses:
+                    200:
+                        description: OK
+                        content:
+                            application/json:
+                                schema:
+                                    type: string
+            """
             name = request.json.get('name')
-            meal.name = name
+            if name:
+                meal.name = name
+
+            introduction = request.json.get('introduction')
+            if introduction:
+                meal.introduction = introduction
 
             db.session.commit()
             return jsonify('Modified Successfully'), 200
 
         if request.method == 'DELETE':
+            """
+                @api [delete] /users/{user_id}/meals/{mealplan_id}
+                tags: [Meals]
+                description: Update a specific meal recipe
+                summary: Update meal recipe
+                security: [{BearerAuth: []}]
+                parameters:
+                    - "$ref": "#/components/parameters/user_id"
+                    - "$ref": "#/components/parameters/mealplan_id"
+                responses:
+                    200:
+                        description: OK
+                        content:
+                            application/json:
+                                schema:
+                                    type: string
+            """
             db.session.delete(meal)
             db.session.commit()
             return jsonify('Deleted Successfully!'), 200
@@ -360,14 +412,29 @@ def specMeal(user_id, mealplan_id):
     abort(403, description="You are not authorized to do that!")
 
 
-@app.route('/users/<int:user_id>/meals/<int:mealplan_id>/plans',
-           methods=['POST', 'GET'])
+@app.route('/users/<int:user_id>/meals/<int:mealplan_id>/plans', methods=['POST', 'GET'])
 def plans(user_id, mealplan_id):
-    meal = MealPlan.query.filter_by(user_id=user_id,
-                                    id=mealplan_id).first_or_404()
+    meal = MealPlan.query.filter_by(user_id=user_id, id=mealplan_id).first_or_404()
     if request.method == 'GET':
-        plans = Meal.query.filter_by(mealplan_id=mealplan_id).order_by(
-            Meal.weekInt.asc(), Meal.dayInt.asc()).all()
+        """
+            @api [get] /users/{user_id}/meals/{mealplan_id}/plans
+            tags: [Meal Plans]
+            description: Get a the meal plan in a particular meal recipe
+            summary: Get mealplans
+            parameters:
+                - "$ref": "#/components/parameters/user_id"
+                - "$ref": "#/components/parameters/mealplan_id"
+            responses:
+                200:
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    "$ref": "#/components/schemas/Plans"
+        """
+        plans = Meal.query.filter_by(mealplan_id=mealplan_id).order_by(Meal.weekInt.asc(), Meal.dayInt.asc()).all()
         if plans:
             result = meals_schema.dump(plans)
             return jsonify(result), 200
@@ -377,6 +444,29 @@ def plans(user_id, mealplan_id):
     verify_jwt_in_request(locations='cookies')
     if current_user == meal.chef:
         if request.method == 'POST' and request.is_json:
+            """
+                @api [post] /users/{user_id}/meals/{mealplan_id}/plans
+                tags: [Meal Plans]
+                description: Add a meal plan to a specific meal recipe
+                summary: Add mealplan
+                security: [{BearerAuth: []}]
+                parameters:
+                    - "$ref": "#/components/parameters/user_id"
+                    - "$ref": "#/components/parameters/mealplan_id"
+                requestBody:
+                    description: Enter the details of the meal plan to be added
+                    content:
+                        application/json:
+                            schema:
+                                "$ref": "#/components/schemas/BasePlan"
+                responses:
+                    200:
+                        description: OK
+                        content:
+                            application/json:
+                                schema:
+                                    type: string
+            """
             day = request.json.get('day')
             dayInt = listOfDays.get(day)
             week = request.json.get('week')
@@ -386,25 +476,12 @@ def plans(user_id, mealplan_id):
             snack = request.json.get('snack', None)
             dinner = request.json.get('dinner', None)
 
-            check = Meal.query.filter_by(mealplan_id=mealplan_id,
-                                         day=day,
-                                         week=week).one_or_none()
+            check = Meal.query.filter_by(mealplan_id=mealplan_id, day=day, week=week).one_or_none()
             if check:
-                abort(
-                    409,
-                    description=
-                    'You already have a meal plan for this day, you can edit it though, if that is what you want!'
-                )
+                abort(409, description='You already have a meal plan for this day, you can edit it though, if that is what you want!')
 
-            meal = Meal(week=week,
-                        day=day,
-                        breakfast=breakfast,
-                        lunch=lunch,
-                        snack=snack,
-                        dinner=dinner,
-                        dayInt=dayInt,
-                        weekInt=weekInt,
-                        mealplan_id=mealplan_id)
+            meal = Meal(week=week, day=day, breakfast=breakfast, lunch=lunch, snack=snack,
+                        dinner=dinner, dayInt=dayInt, weekInt=weekInt, mealplan_id=mealplan_id)
             db.session.add(meal)
             db.session.commit()
             return jsonify('Added Successfully'), 200
@@ -412,23 +489,59 @@ def plans(user_id, mealplan_id):
     abort(401, description="You need to be logged in to do that!")
 
 
-@app.route('/users/<int:user_id>/meals/<int:mealplan_id>/plans/<int:plan_id>',
-           methods=['PATCH', 'GET', 'DELETE'])
+@app.route('/users/<int:user_id>/meals/<int:mealplan_id>/plans/<int:plan_id>', methods=['PATCH', 'GET', 'DELETE'])
 def specPlan(user_id, mealplan_id, plan_id):
     _ = User.query.get_or_404(user_id)
-    meal = MealPlan.query.filter_by(
-        user_id=user_id,
-        id=mealplan_id).first_or_404(description="Check your Meal ID.")
-    plan = Meal.query.filter_by(
-        mealplan_id=mealplan_id,
-        id=plan_id).first_or_404(description='Check your Plan ID')
+    meal = MealPlan.query.filter_by(user_id=user_id, id=mealplan_id).first_or_404(description="Check your Meal ID.")
+    plan = Meal.query.filter_by(mealplan_id=mealplan_id, id=plan_id).first_or_404(description='Check your Plan ID')
     if request.method == 'GET':
+        """
+            @api [get] /users/{user_id}/meals/{mealplan_id}/plans/{plan_id}
+            tags: [Meal Plans]
+            description: Get a specific meal plan from a meal recipe
+            summary: Get meal plan
+            parameters:
+                - "$ref": "#/components/parameters/user_id"
+                - "$ref": "#/components/parameters/mealplan_id"
+                - "$ref": "#/components/parameters/plan_id"
+            responses:
+                200:
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                "$ref": "#/components/schemas/Plans"
+        """
         result = meal_schema.dump(plan)
         return jsonify(result), 200
 
     verify_jwt_in_request(locations='cookies')
     if current_user == meal.chef:
         if request.method == 'PATCH':
+            """
+                @api [patch] /users/{user_id}/meals/{mealplan_id}/plans/{plan_id}
+                tags: [Meal Plans]
+                description: Update a meal plan from a meal recipe
+                summary: Update meal plan
+                security: [{BearerAuth: []}]
+                parameters:
+                    - "$ref": "#/components/parameters/user_id"
+                    - "$ref": "#/components/parameters/mealplan_id"
+                    - "$ref": "#/components/parameters/plan_id"
+                requestBody:
+                    description: Enter the updated values of your meal plan
+                    content:
+                        application/json:
+                            schema:
+                                "$ref": "#/components/schemas/SpecPlan"
+                responses:
+                    200:
+                        description: OK
+                        content:
+                            application/json:
+                                schema:
+                                    type: string
+            """
             if request.is_json:
                 breakfast = request.json.get('breakfast')
                 if breakfast:
@@ -450,6 +563,24 @@ def specPlan(user_id, mealplan_id, plan_id):
                 return jsonify('Your Plan have been updated Successfully'), 200
 
         if request.method == 'DELETE':
+            """
+                @api [delete] /users/{user_id}/meals/{mealplan_id}/plans/{plan_id}
+                tags: [Meal Plans]
+                description: Update a meal plan from a meal recipe
+                summary: Update meal plan
+                security: [{BearerAuth: []}]
+                parameters:
+                    - "$ref": "#/components/parameters/user_id"
+                    - "$ref": "#/components/parameters/mealplan_id"
+                    - "$ref": "#/components/parameters/plan_id"
+                responses:
+                    200:
+                        description: OK
+                        content:
+                            application/json:
+                                schema:
+                                    type: string
+            """
             db.session.delete(plan)
             db.session.commit()
             return jsonify('Deleted Successfully'), 200
@@ -460,14 +591,28 @@ def specPlan(user_id, mealplan_id, plan_id):
 @app.route('/users/<int:user_id>/meals/<int:mealplan_id>/download')
 @jwt_required(locations='cookies')
 def downloadMeals(user_id, mealplan_id):
-    user = User.query.get_or_404(user_id,
-                                 description='That user does not exist!')
-    mealplan = MealPlan.query.filter_by(
-        user_id=user_id, id=mealplan_id).first_or_404(
-            description='That meal plan does not exist')
+    """
+        @api [get] /users/{user_id}/meals/{mealplan_id}/download
+        tags: [Save]
+        description: Download a meal recipe as pdf to your computer
+        summary: Download meal recipe
+        security: [{BearerAuth: []}]
+        parameters:
+            - "$ref": "#/components/parameters/user_id"
+            - "$ref": "#/components/parameters/mealplan_id"
+        responses:
+            200:
+                description: OK
+                content:
+                    application/pdf:
+                        schema:
+                            type: string
+                            format: base64
+    """
+    user = User.query.get_or_404(user_id, description='That user does not exist!')
+    mealplan = MealPlan.query.filter_by(user_id=user_id, id=mealplan_id).first_or_404(description='That meal plan does not exist')
     if current_user == user:
-        plans = Meal.query.filter_by(mealplan_id=mealplan_id).order_by(
-            Meal.weekInt.asc(), Meal.dayInt.asc()).all()
+        plans = Meal.query.filter_by(mealplan_id=mealplan_id).order_by(Meal.weekInt.asc(), Meal.dayInt.asc()).all()
         data = {}
         for plan in plans:
             if plan.week in data:

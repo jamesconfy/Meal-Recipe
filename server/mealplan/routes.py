@@ -1,15 +1,12 @@
 from datetime import timedelta
 import json
 import pdfkit
-from flask import current_app as app, jsonify, request, abort, render_template
+from flask import current_app as app, jsonify, make_response, request, abort, render_template, Response
 from werkzeug.exceptions import HTTPException
 from mealplan import bcrypt, db
 from mealplan.models import User, MealPlan, Meal, UserSchema, MealPlanSchema, MealSchema
 from mealplan.utils import listOfWeeks, listOfDays
-from flask_jwt_extended import (create_access_token, current_user,
-                                jwt_required, set_access_cookies,
-                                unset_jwt_cookies, create_refresh_token,
-                                set_refresh_cookies, verify_jwt_in_request)
+from flask_jwt_extended import (create_access_token, current_user, jwt_required, create_refresh_token, verify_jwt_in_request)
 
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)
@@ -33,8 +30,8 @@ def register():
             email = request.json.get('email')
             if User.query.filter_by(email=email).first():
                 abort(409, description='This email is taken!')
-            firstName = request.json.get('first name')
-            lastName = request.json.get('last name')
+            firstName = request.json.get('firstName')
+            lastName = request.json.get('lastName')
             password = bcrypt.generate_password_hash(
                 request.json.get('password')).decode('utf-8')
 
@@ -45,7 +42,7 @@ def register():
             db.session.add(user)
             db.session.commit()
 
-            return jsonify(user.__repr__())
+            return jsonify("Registered successfully")
         else:
             return abort(400, description='Content-Type needs to be JSON')
 
@@ -76,8 +73,6 @@ def login():
                     "access token": access_token,
                     "refresh token": refresh_token
                 })
-                set_access_cookies(response, access_token)
-                set_refresh_cookies(response, refresh_token)
                 return response, 200
             else:
                 abort(401, description='Email or Password is incorrect')
@@ -97,7 +92,7 @@ def user(user_id):
     if request.method == 'GET':
         return jsonify(user_schema.dump(user))
 
-    verify_jwt_in_request(locations='cookies')
+    verify_jwt_in_request(locations='headers')
     if request.method == 'PATCH':
         if current_user == user:
             if request.is_json:
@@ -107,16 +102,15 @@ def user(user_id):
                 if email:
                     user.email = email
 
-                firstName = request.json.get('first name')
+                firstName = request.json.get('firstName')
                 if firstName:
                     user.firstName = firstName
 
-                lastName = request.json.get('last name')
+                lastName = request.json.get('lastName')
                 if lastName:
                     user.lastName = lastName
 
                 db.session.commit()
-                print(current_user)
                 return jsonify('Updated Successfully!'), 200
 
     if request.method == 'DELETE':
@@ -124,7 +118,6 @@ def user(user_id):
             db.session.delete(user)
             db.session.commit()
             response = jsonify({"msg": "Successfully."})
-            unset_jwt_cookies(response)
             return response
 
     abort(403, description="You are not authorized to do that.")
@@ -143,11 +136,12 @@ def meals(user_id):
             return jsonify(
                 description='You do not have a valid meal plan'), 200
 
-    verify_jwt_in_request(locations='cookies')
+    verify_jwt_in_request(locations='headers')
     if request.method == 'POST':
         if current_user == user:
             if request.is_json:
                 name = request.json.get('name')
+                introduction = request.json.get('introduction')
                 check = MealPlan.query.filter_by(user_id=current_user.id,
                                                  name=name).one_or_none()
                 if check:
@@ -155,7 +149,7 @@ def meals(user_id):
                           description=
                           'You already have a meal plan with that name.')
 
-                mealplan = MealPlan(name=name, user_id=current_user.id)
+                mealplan = MealPlan(name=name, user_id=current_user.id, introduction=introduction)
                 db.session.add(mealplan)
                 db.session.commit()
                 return jsonify('Added Successfully'), 200
@@ -171,7 +165,7 @@ def specMeal(user_id, mealplan_id):
     if request.method == 'GET':
         return jsonify(mealplan_schema.dump(meal))
 
-    verify_jwt_in_request(locations='cookies')
+    verify_jwt_in_request(locations='headers')
     if current_user == meal.chef:
         if request.method == 'PATCH' and request.is_json:
             name = request.json.get('name')
@@ -202,7 +196,7 @@ def plans(user_id, mealplan_id):
         else:
             return jsonify(description='No meal'), 200
 
-    verify_jwt_in_request(locations='cookies')
+    verify_jwt_in_request(locations='headers')
     if current_user == meal.chef:
         if request.method == 'POST' and request.is_json:
             day = request.json.get('day')
@@ -254,7 +248,7 @@ def specPlan(user_id, mealplan_id, plan_id):
         result = meal_schema.dump(plan)
         return jsonify(result), 200
 
-    verify_jwt_in_request(locations='cookies')
+    verify_jwt_in_request(locations='headers')
     if current_user == meal.chef:
         if request.method == 'PATCH':
             if request.is_json:
@@ -286,7 +280,7 @@ def specPlan(user_id, mealplan_id, plan_id):
 
 
 @app.route('/users/<int:user_id>/meals/<int:mealplan_id>/download')
-@jwt_required(locations='cookies')
+@jwt_required(locations='headers')
 def downloadMeals(user_id, mealplan_id):
     user = User.query.get_or_404(user_id,
                                  description='That user does not exist!')
@@ -318,6 +312,16 @@ def downloadMeals(user_id, mealplan_id):
 
                 data[plan.week] = {plan.day: day}
 
+        options = {
+            "orientation": "landscape",
+            "page-size": "A4",
+            "margin-top": "1.0cm",
+            "margin-right": "1.0cm",
+            "margin-bottom": "1.0cm",
+            "margin-left": "1.0cm",
+            "encoding": "UTF-8",
+        }
+
         name = mealplan.name
         introduction = mealplan.introduction
         body = render_template('pdf.html',
@@ -325,15 +329,16 @@ def downloadMeals(user_id, mealplan_id):
                                user=user,
                                name=name,
                                introduction=introduction)
-        rendered = pdfkit.from_string(input=body, output_path="output.pdf")
-
-        return jsonify("Successful")
+        response = make_response(pdfkit.from_string(body, output_path=False, options=options))
+        response.headers["Content-Type"] = "application/pdf"
+        response.headers["Content-Disposition"] = "inline; filename=output.pdf"
+        return response
 
     abort(403, description='You are not authorized to do that')
 
 
 @app.route('/refresh/token')
-@jwt_required(refresh=True, locations='cookies')
+@jwt_required(refresh=True, locations='headers')
 def refreshToken():
     access_token = create_access_token(identity=current_user,
                                        expires_delta=timedelta(minutes=30))
@@ -345,13 +350,12 @@ def refreshToken():
         #               "refresh token": refresh_token,
         "email": current_user.email
     })
-    set_access_cookies(response, access_token)
-    # set_refresh_cookies(response, refresh_token)
+    # set_refresh_headers(response, refresh_token)
     return response
 
 
 @app.route("/protected", methods=["GET"])
-@jwt_required(locations='cookies')
+@jwt_required(locations='headers')
 def protected():
     return jsonify({
         "id": current_user.id,
@@ -361,10 +365,10 @@ def protected():
 
 
 @app.route("/logout", methods=['GET'])
-@jwt_required(locations='cookies')
+@jwt_required(locations='headers')
 def logout():
     response = jsonify({"msg": "logout successfully."})
-    unset_jwt_cookies(response)
+    unset_jwt_headers(response)
     return response
 
 

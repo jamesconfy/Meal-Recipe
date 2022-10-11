@@ -6,10 +6,9 @@ flask-migrate
 flask-sqlalchemy
 gunicorn
 marshmallow
-mysql-connector
-mysql-connector-python
-pylint
 PyMySQL
 python-dotenv
 pdfkit
 flask-jwt-extended
+flask-cors
+flask-swagger-ui
