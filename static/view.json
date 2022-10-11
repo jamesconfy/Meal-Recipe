@@ -76,6 +76,30 @@
         }
       }
     },
+    "/refresh/token": {
+      "get": {
+        "tags": ["Users"],
+        "description": "Refresh a user's access token",
+        "summary": "Refresh token",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefreshToken"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/register": {
       "post": {
         "tags": ["Users"],
@@ -785,6 +809,17 @@
             "type": "string"
           },
           "refresh token": {
+            "type": "string"
+          }
+        }
+      },
+      "RefreshToken": {
+        "type": "object",
+        "properties": {
+          "msg": {
+            "type": "string"
+          },
+          "access token": {
             "type": "string"
           }
         }

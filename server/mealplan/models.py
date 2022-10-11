@@ -45,8 +45,7 @@ class MealPlanSchema(Schema):
     name = fields.Str(data_key='Name')
     introduction = fields.Str(data_key='Introduction')
     dateCreated = fields.Str(data_key='Date Created')
-    user = fields.Nested(UserSchema)
-
+    user_id = fields.Int()
 
 class Meal(db.Model):
     __tablename__ = 'meal'

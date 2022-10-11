@@ -277,7 +277,8 @@ def meals(user_id):
         """
         plans = MealPlan.query.filter_by(user_id=user_id).all()
         if plans:
-            result1 = mealplans_schema.dump(plans)
+            result = {**plans, user: user}
+            result1 = mealplans_schema.dump(result)
             return jsonify(result1), 200
 
         else:
@@ -607,7 +608,7 @@ def downloadMeals(user_id, mealplan_id):
                     application/pdf:
                         schema:
                             type: string
-                            format: base64
+                            format: binary
     """
     user = User.query.get_or_404(user_id, description='That user does not exist!')
     mealplan = MealPlan.query.filter_by(user_id=user_id, id=mealplan_id).first_or_404(description='That meal plan does not exist')
@@ -652,6 +653,20 @@ def downloadMeals(user_id, mealplan_id):
 @app.route('/refresh/token')
 @jwt_required(refresh=True, locations='cookies')
 def refreshToken():
+    """
+        @api [get] /refresh/token
+        tags: [Users]
+        description: Refresh a user's access token
+        summary: Refresh token
+        security: [{BearerAuth: []}]
+        responses:
+            200:
+                description: OK
+                content:
+                    application/json:
+                        schema:
+                            "$ref": "#/components/schemas/RefreshToken"
+    """
     access_token = create_access_token(identity=current_user,
                                        expires_delta=timedelta(minutes=30))
     #refresh_token = create_refresh_token(identity=current_user, expires_delta=timedelta(days=2))

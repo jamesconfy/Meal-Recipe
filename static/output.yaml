@@ -3,13 +3,20 @@ openapi: 3.0.0
 info:
   version: 1.0.0
   title: Meal Recipe
-servers:
-  - url: http://localhost:5000
+  description: Application that helps you to create a meal schedule
+  contact:
+    name: Confidence James
+    email: bobdence@gmail.com
+    url: "https://github.com/jamesconfy"
 tags:
   - name: Default
+    description: Default route
   - name: Users
+    description: Manages everything concerning users info
   - name: Meals
+    description: Manages the amount of meals you have
   - name: Meal Plans
+    description: Manages the meal schedule you have for each day
 paths:
   "/home":
     get:
@@ -45,6 +52,21 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/Token"
+  "/refresh/token":
+    get:
+      tags:
+        - Users
+      description: Refresh a user's access token
+      summary: Refresh token
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/RefreshToken"
   "/register":
     post:
       tags:
@@ -493,6 +515,13 @@ components:
         access token:
           type: string
         refresh token:
+          type: string
+    RefreshToken:
+      type: object
+      properties:
+        msg:
+          type: string
+        access token:
           type: string
   parameters:
     user_id:

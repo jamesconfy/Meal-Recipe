@@ -1,12 +1,13 @@
 from datetime import timedelta
 import json
 import pdfkit
-from flask import current_app as app, jsonify, make_response, request, abort, render_template, Response
+from flask import current_app as app, jsonify, make_response, request, abort, render_template
 from werkzeug.exceptions import HTTPException
 from mealplan import bcrypt, db
 from mealplan.models import User, MealPlan, Meal, UserSchema, MealPlanSchema, MealSchema
 from mealplan.utils import listOfWeeks, listOfDays
 from flask_jwt_extended import (create_access_token, current_user, jwt_required, create_refresh_token, verify_jwt_in_request)
+from flask_swagger_ui import get_swaggerui_blueprint
 
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)
@@ -19,9 +20,7 @@ meals_schema = MealSchema(many=True)
 @app.route('/')
 @app.route('/home')
 def home():
-    #return render_template("layout.html")
     return jsonify('Home alone again!')
-
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -35,10 +34,7 @@ def register():
             password = bcrypt.generate_password_hash(
                 request.json.get('password')).decode('utf-8')
 
-            user = User(firstName=firstName,
-                        lastName=lastName,
-                        email=email,
-                        password=password)
+            user = User(firstName=firstName, lastName=lastName, email=email, password=password)
             db.session.add(user)
             db.session.commit()
 
@@ -46,27 +42,16 @@ def register():
         else:
             return abort(400, description='Content-Type needs to be JSON')
 
-
 @app.route('/login', methods=['POST'])
 def login():
-    # if request.method == 'GET':
-    #     if verify_jwt_in_request(optional=True):
-    #         return jsonify('You are already logged in'), 200
-
-    #     else:
-    #         return jsonify('You need to sign in'), 200
-
     if request.method == 'POST':
         if request.is_json:
             user = User.query.filter_by(
                 email=request.json.get('email')).one_or_none()
 
-            if user and bcrypt.check_password_hash(
-                    user.password, request.json.get('password')):
-                access_token = create_access_token(
-                    identity=user, expires_delta=timedelta(hours=1))
-                refresh_token = create_refresh_token(
-                    identity=user, expires_delta=timedelta(days=2))
+            if user and bcrypt.check_password_hash(user.password, request.json.get('password')):
+                access_token = create_access_token(identity=user, expires_delta=timedelta(hours=1))
+                refresh_token = create_refresh_token(identity=user, expires_delta=timedelta(days=2))
 
                 response = jsonify({
                     "msg": "logged in successfully.",
@@ -76,7 +61,6 @@ def login():
                 return response, 200
             else:
                 abort(401, description='Email or Password is incorrect')
-
 
 @app.route('/users', methods=['GET'])
 def users():
@@ -121,7 +105,6 @@ def user(user_id):
             return response
 
     abort(403, description="You are not authorized to do that.")
-
 
 @app.route('/users/<int:user_id>/meals', methods=['POST', 'GET'])
 def meals(user_id):
@@ -340,10 +323,7 @@ def downloadMeals(user_id, mealplan_id):
 @app.route('/refresh/token')
 @jwt_required(refresh=True, locations='headers')
 def refreshToken():
-    access_token = create_access_token(identity=current_user,
-                                       expires_delta=timedelta(minutes=30))
-    #refresh_token = create_refresh_token(identity=current_user, expires_delta=timedelta(days=2))
-
+    access_token = create_access_token(identity=current_user, expires_delta=timedelta(minutes=30))
     response = jsonify({
         "msg": "access token refreshed.",
         "access token": access_token,
@@ -352,25 +332,6 @@ def refreshToken():
     })
     # set_refresh_headers(response, refresh_token)
     return response
-
-
-@app.route("/protected", methods=["GET"])
-@jwt_required(locations='headers')
-def protected():
-    return jsonify({
-        "id": current_user.id,
-        "email": current_user.email,
-        "name": f'{current_user.firstName} {current_user.lastName}',
-    }), 200
-
-
-@app.route("/logout", methods=['GET'])
-@jwt_required(locations='headers')
-def logout():
-    response = jsonify({"msg": "logout successfully."})
-    unset_jwt_headers(response)
-    return response
-
 
 @app.errorhandler(HTTPException)
 def handle_exception(e):
@@ -385,3 +346,19 @@ def handle_exception(e):
     })
     response.content_type = "application/json"
     return response
+
+
+SWAGGER_URL = '/swagger'
+API_URL = '/static/output.yaml'
+
+# Call factory function to create our blueprint
+swaggerui_blueprint = get_swaggerui_blueprint(
+    SWAGGER_URL,  # Swagger UI static files will be mapped to '{SWAGGER_URL}/dist/'
+    API_URL,
+    config={  # Swagger UI config overrides
+        'app_name': "Meal Recipe",
+        'app_version': 1.0
+    },
+)
+
+app.register_blueprint(swaggerui_blueprint)
