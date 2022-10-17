@@ -1,14 +1,19 @@
-from datetime import timedelta
 import json
-from unittest import result
+from datetime import timedelta
+
 import pdfkit
-from flask import current_app as app, jsonify, make_response, request, abort, render_template
-from werkzeug.exceptions import HTTPException
-from mealplan import bcrypt, db
-from mealplan.models import User, MealPlan, Meal, UserSchema, MealPlanSchema, MealSchema
-from mealplan.utils import listOfWeeks, listOfDays
-from flask_jwt_extended import (create_access_token, current_user, jwt_required, create_refresh_token, verify_jwt_in_request)
+from flask import abort
+from flask import current_app as app
+from flask import jsonify, make_response, render_template, request
+from flask_jwt_extended import (create_access_token, create_refresh_token,
+                                current_user, jwt_required,
+                                verify_jwt_in_request)
 from flask_swagger_ui import get_swaggerui_blueprint
+from mealplan import bcrypt, db
+from mealplan.models import (Meal, MealPlan, MealPlanSchema, MealSchema, User,
+                             UserSchema)
+from mealplan.utils import listOfDays, listOfWeeks
+from werkzeug.exceptions import HTTPException
 
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)
@@ -136,7 +141,6 @@ def meals(user_id):
 
     abort(401, description="You need to be logged in to do that!")
 
-
 @app.route('/users/<int:user_id>/meals/<int:mealplan_id>',
            methods=['PATCH', 'GET', 'DELETE'])
 def specMeal(user_id, mealplan_id):
@@ -146,7 +150,7 @@ def specMeal(user_id, mealplan_id):
         return jsonify(mealplan_schema.dump(meal))
 
     verify_jwt_in_request(locations='headers')
-    if current_user == meal.chef:
+    if current_user == meal.user:
         if request.method == 'PATCH' and request.is_json:
             name = request.json.get('name')
             meal.name = name
@@ -177,7 +181,7 @@ def plans(user_id, mealplan_id):
             return jsonify(description='No meal'), 200
 
     verify_jwt_in_request(locations='headers')
-    if current_user == meal.chef:
+    if current_user == meal.user:
         if request.method == 'POST' and request.is_json:
             day = request.json.get('day')
             dayInt = listOfDays.get(day)
@@ -229,7 +233,7 @@ def specPlan(user_id, mealplan_id, plan_id):
         return jsonify(result), 200
 
     verify_jwt_in_request(locations='headers')
-    if current_user == meal.chef:
+    if current_user == meal.user:
         if request.method == 'PATCH':
             if request.is_json:
                 breakfast = request.json.get('breakfast')

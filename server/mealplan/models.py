@@ -1,7 +1,9 @@
-from mealplan import db, jwt
-from sqlalchemy import Column, Integer, String, ForeignKey, Text, DateTime
 from datetime import datetime
+
 from marshmallow import Schema, fields
+from mealplan import db, jwt
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
+
 
 @jwt.user_identity_loader
 def user_identity_lookup(user):
@@ -88,4 +90,4 @@ class MealSchema(Schema):
     snack = fields.String()
     dinner = fields.String()
     dateCreated = fields.DateTime()
-    meal = fields.Nested(MealPlanSchema)
+    plan = fields.Nested(MealPlanSchema)
