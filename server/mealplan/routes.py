@@ -1,5 +1,6 @@
 from datetime import timedelta
 import json
+from unittest import result
 import pdfkit
 from flask import current_app as app, jsonify, make_response, request, abort, render_template
 from werkzeug.exceptions import HTTPException
@@ -116,8 +117,7 @@ def meals(user_id):
             return jsonify(result1), 200
 
         else:
-            return jsonify(
-                description='You do not have a valid meal plan'), 200
+            return jsonify(description='You do not have a valid meal plan'), 200
 
     verify_jwt_in_request(locations='headers')
     if request.method == 'POST':
@@ -125,12 +125,9 @@ def meals(user_id):
             if request.is_json:
                 name = request.json.get('name')
                 introduction = request.json.get('introduction')
-                check = MealPlan.query.filter_by(user_id=current_user.id,
-                                                 name=name).one_or_none()
+                check = MealPlan.query.filter_by(user_id=current_user.id, name=name).one_or_none()
                 if check:
-                    abort(409,
-                          description=
-                          'You already have a meal plan with that name.')
+                    abort(409, description='You already have a meal plan with that name.')
 
                 mealplan = MealPlan(name=name, user_id=current_user.id, introduction=introduction)
                 db.session.add(mealplan)
