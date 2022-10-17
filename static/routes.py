@@ -1,15 +1,19 @@
-from datetime import timedelta
 import json
+from datetime import timedelta
+
 import pdfkit
-from flask import current_app as app, jsonify, request, abort, render_template
-from werkzeug.exceptions import HTTPException
+from flask import abort
+from flask import current_app as app
+from flask import jsonify, render_template, request
+from flask_jwt_extended import (create_access_token, create_refresh_token,
+                                current_user, jwt_required, set_access_cookies,
+                                set_refresh_cookies, unset_jwt_cookies,
+                                verify_jwt_in_request)
 from mealplan import bcrypt, db
-from mealplan.models import User, MealPlan, Meal, UserSchema, MealPlanSchema, MealSchema
-from mealplan.utils import listOfWeeks, listOfDays
-from flask_jwt_extended import (create_access_token, current_user,
-                                jwt_required, set_access_cookies,
-                                unset_jwt_cookies, create_refresh_token,
-                                set_refresh_cookies, verify_jwt_in_request)
+from mealplan.models import (Meal, MealPlan, MealPlanSchema, MealSchema, User,
+                             UserSchema)
+from mealplan.utils import listOfDays, listOfWeeks
+from werkzeug.exceptions import HTTPException
 
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)
