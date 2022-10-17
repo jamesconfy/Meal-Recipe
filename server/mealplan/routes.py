@@ -264,13 +264,13 @@ def specPlan(user_id, mealplan_id, plan_id):
 
 
 @app.route('/users/<int:user_id>/meals/<int:mealplan_id>/download')
-@jwt_required(locations='headers')
 def downloadMeals(user_id, mealplan_id):
     user = User.query.get_or_404(user_id,
                                  description='That user does not exist!')
     mealplan = MealPlan.query.filter_by(
         user_id=user_id, id=mealplan_id).first_or_404(
             description='That meal plan does not exist')
+    verify_jwt_in_request(locations="headers")
     if current_user == user:
         plans = Meal.query.filter_by(mealplan_id=mealplan_id).order_by(
             Meal.weekInt.asc(), Meal.dayInt.asc()).all()

@@ -19,7 +19,7 @@ def create_app():
     migrate.init_app(app=app, db=db)
     jwt.init_app(app)
     bcrypt.init_app(app)
-    cor.init_app(app=app)
+    cor.init_app(app=app, resources="*")
 
     with app.app_context():
         from mealplan import routes

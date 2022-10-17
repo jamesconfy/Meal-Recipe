@@ -1,601 +1,560 @@
 ---
-  openapi: "3.0.0"
-  info: 
-    version: "1.0.0"
-    title: "Meal Recipe"
-    description: "Application that helps you to create a meal schedule"
-    contact: 
-      name: "Confidence James"
-      email: "bobdence@gmail.com"
-      url: "https://github.com/jamesconfy"
-  tags: 
-    - 
-      name: "Default"
-      description: "Default route"
-    - 
-      name: "Users"
-      description: "Manages everything concerning users info"
-    - 
-      name: "Meals"
-      description: "Manages the amount of meals you have"
-    - 
-      name: "Meal Plans"
-      description: "Manages the meal schedule you have for each day"
-  paths: 
-    /home: 
-      get: 
-        tags: 
-          - "Default"
-        summary: "Home route"
-        description: "Returns JSON if site is up and running"
-        responses: 
-          200: 
-            description: "OK!"
-            content: 
-              application/json: 
-                schema: 
-                  properties: 
-                    value: 
-                      type: "string"
-    /login: 
-      post: 
-        tags: 
-          - "Users"
-        summary: "Login"
-        description: "Route to login a user"
-        requestBody: 
-          description: "Provide credentials to be logged in"
-          content: 
-            application/json: 
-              schema: 
-                $ref: "#/components/schemas/Login"
-        responses: 
-          200: 
-            description: "OK"
-            content: 
-              application/json: 
-                schema: 
-                  $ref: "#/components/schemas/Token"
-    /refresh/token: 
-      get: 
-        tags: 
-          - "Users"
-        description: "Refresh a user's access token"
-        summary: "Refresh token"
-        security: 
-          - 
-            BearerAuth: []
-        responses: 
-          200: 
-            description: "OK"
-            content: 
-              application/json: 
-                schema: 
-                  $ref: "#/components/schemas/RefreshToken"
-    /register: 
-      post: 
-        tags: 
-          - "Users"
-        summary: "Register a user"
-        description: "Route to register a user"
-        requestBody: 
-          description: "Input your credentials to be registered"
-          content: 
-            application/json: 
-              schema: 
-                $ref: "#/components/schemas/BaseUser"
-        responses: 
-          200: 
-            description: "OK"
-            content: 
-              application/json: 
-                schema: 
-                  type: "string"
-    /users: 
-      get: 
-        tags: 
-          - "Users"
-        description: "Return list of users"
-        summary: "Users route"
-        responses: 
-          200: 
-            description: "OK"
-            content: 
-              application/json: 
-                schema: 
-                  type: "array"
-                  items: 
-                    $ref: "#/components/schemas/Users"
-    /users/{user_id}: 
-      get: 
-        tags: 
-          - "Users"
-        description: "Return the values of a specific user"
-        summary: "Get a specific user"
-        parameters: 
-          - 
-            $ref: "#/components/parameters/user_id"
-        responses: 
-          200: 
-            description: "OK"
-            content: 
-              application/json: 
-                schema: 
+openapi: "3.0.0"
+info:
+  version: "1.0.0"
+  title: "Meal Recipe"
+  description: "Application that helps you to create a meal schedule"
+  contact:
+    name: "Confidence James"
+    email: "bobdence@gmail.com"
+    url: "https://github.com/jamesconfy"
+tags:
+  - name: "Default"
+    description: "Default route"
+  - name: "Users"
+    description: "Manages everything concerning users info"
+  - name: "Meals"
+    description: "Manages the amount of meals you have"
+  - name: "Meal Plans"
+    description: "Manages the meal schedule you have for each day"
+paths:
+  /home:
+    get:
+      tags:
+        - "Default"
+      summary: "Home route"
+      description: "Returns JSON if site is up and running"
+      responses:
+        200:
+          description: "OK!"
+          content:
+            application/json:
+              schema:
+                properties:
+                  value:
+                    type: "string"
+  /login:
+    post:
+      tags:
+        - "Users"
+      summary: "Login"
+      description: "Route to login a user"
+      requestBody:
+        description: "Provide credentials to be logged in"
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Login"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Token"
+  /refresh/token:
+    get:
+      tags:
+        - "Users"
+      description: "Refresh a user's access token"
+      summary: "Refresh token"
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RefreshToken"
+  /register:
+    post:
+      tags:
+        - "Users"
+      summary: "Register a user"
+      description: "Route to register a user"
+      requestBody:
+        description: "Input your credentials to be registered"
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BaseUser"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "string"
+  /users:
+    get:
+      tags:
+        - "Users"
+      description: "Return list of users"
+      summary: "Users route"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
                   $ref: "#/components/schemas/Users"
-      patch: 
-        tags: 
-          - "Users"
-        description: "Update the details of a specific user"
-        summary: "Update user"
-        security: 
-          - 
-            BearerAuth: []
-        parameters: 
-          - 
-            in: "path"
-            name: "user_id"
-            required: true
-            description: "User ID"
-            schema: 
-              type: "integer"
-              format: "int32"
-        requestBody: 
-          description: "Input your updated details"
-          content: 
-            application/json: 
-              schema: 
-                properties: 
-                  firstName: 
+  /users/{user_id}:
+    get:
+      tags:
+        - "Users"
+      description: "Return the values of a specific user"
+      summary: "Get a specific user"
+      parameters:
+        - $ref: "#/components/parameters/user_id"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Users"
+    patch:
+      tags:
+        - "Users"
+      description: "Update the details of a specific user"
+      summary: "Update user"
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: "path"
+          name: "user_id"
+          required: true
+          description: "User ID"
+          schema:
+            type: "integer"
+            format: "int32"
+      requestBody:
+        description: "Input your updated details"
+        content:
+          application/json:
+            schema:
+              properties:
+                firstName:
+                  type: "string"
+                lastName:
+                  type: "string"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                properties:
+                  msg:
                     type: "string"
-                  lastName: 
+    delete:
+      tags:
+        - "Users"
+      description: "Delete a specific user"
+      summary: "Delete user"
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: "path"
+          name: "user_id"
+          required: true
+          description: "User ID"
+          schema:
+            type: "integer"
+            format: "int32"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                properties:
+                  msg:
                     type: "string"
-        responses: 
-          200: 
-            description: "OK"
-            content: 
-              application/json: 
-                schema: 
-                  properties: 
-                    msg: 
-                      type: "string"
-      delete: 
-        tags: 
-          - "Users"
-        description: "Delete a specific user"
-        summary: "Delete user"
-        security: 
-          - 
-            BearerAuth: []
-        parameters: 
-          - 
-            in: "path"
-            name: "user_id"
-            required: true
-            description: "User ID"
-            schema: 
-              type: "integer"
-              format: "int32"
-        responses: 
-          200: 
-            description: "OK"
-            content: 
-              application/json: 
-                schema: 
-                  properties: 
-                    msg: 
-                      type: "string"
-    /users/{user_id}/meals: 
-      get: 
-        tags: 
-          - "Meals"
-        description: "Get all the meals recipe a user has"
-        summary: "Total meals"
-        parameters: 
-          - 
-            $ref: "#/components/parameters/user_id"
-        responses: 
-          200: 
-            description: "OK"
-            content: 
-              application/json: 
-                schema: 
-                  type: "array"
-                  items: 
-                    $ref: "#/components/schemas/Meals"
-      post: 
-        tags: 
-          - "Meals"
-        description: "Add a meal recipe to a user's account"
-        summary: "Add meal"
-        security: 
-          - 
-            BearerAuth: []
-        parameters: 
-          - 
-            $ref: "#/components/parameters/user_id"
-        requestBody: 
-          description: "Enter the details of meal"
-          content: 
-            application/json: 
-              schema: 
-                $ref: "#/components/schemas/BaseMeal"
-        responses: 
-          200: 
-            description: "OK"
-            content: 
-              application/json: 
-                schema: 
-                  properties: 
-                    msg: 
-                      type: "string"
-    /users/{user_id}/meals/{mealplan_id}: 
-      get: 
-        tags: 
-          - "Meals"
-        description: "Get a the specific meal recipe"
-        summary: "Get meal recipe"
-        parameters: 
-          - 
-            $ref: "#/components/parameters/user_id"
-          - 
-            $ref: "#/components/parameters/mealplan_id"
-        responses: 
-          200: 
-            description: "OK"
-            content: 
-              application/json: 
-                schema: 
+  /users/{user_id}/meals:
+    get:
+      tags:
+        - "Meals"
+      description: "Get all the meals recipe a user has"
+      summary: "Total meals"
+      parameters:
+        - $ref: "#/components/parameters/user_id"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
                   $ref: "#/components/schemas/Meals"
-      patch: 
-        tags: 
-          - "Meals"
-        description: "Update a specific meal recipe"
-        summary: "Update meal recipe"
-        security: 
-          - 
-            BearerAuth: []
-        parameters: 
-          - 
-            $ref: "#/components/parameters/user_id"
-          - 
-            $ref: "#/components/parameters/mealplan_id"
-        requestBody: 
-          description: "Enter the new name of the meal recipe"
-          content: 
-            application/json: 
-              schema: 
-                $ref: "#/components/schemas/BaseMeal"
-        responses: 
-          200: 
-            description: "OK"
-            content: 
-              application/json: 
-                schema: 
-                  type: "string"
-      delete: 
-        tags: 
-          - "Meals"
-        description: "Update a specific meal recipe"
-        summary: "Update meal recipe"
-        security: 
-          - 
-            BearerAuth: []
-        parameters: 
-          - 
-            $ref: "#/components/parameters/user_id"
-          - 
-            $ref: "#/components/parameters/mealplan_id"
-        responses: 
-          200: 
-            description: "OK"
-            content: 
-              application/json: 
-                schema: 
-                  type: "string"
-    /users/{user_id}/meals/{mealplan_id}/download: 
-      get: 
-        tags: 
-          - "Save"
-        description: "Download a meal recipe as pdf to your computer"
-        summary: "Download meal recipe"
-        security: 
-          - 
-            BearerAuth: []
-        parameters: 
-          - 
-            $ref: "#/components/parameters/user_id"
-          - 
-            $ref: "#/components/parameters/mealplan_id"
-        responses: 
-          200: 
-            description: "OK"
-            content: 
-              application/pdf: 
-                schema: 
-                  type: "string"
-                  format: "binary"
-    /users/{user_id}/meals/{mealplan_id}/plans: 
-      get: 
-        tags: 
-          - "Meal Plans"
-        description: "Get a the meal plan in a particular meal recipe"
-        summary: "Get mealplans"
-        parameters: 
-          - 
-            $ref: "#/components/parameters/user_id"
-          - 
-            $ref: "#/components/parameters/mealplan_id"
-        responses: 
-          200: 
-            description: "OK"
-            content: 
-              application/json: 
-                schema: 
-                  type: "array"
-                  items: 
-                    $ref: "#/components/schemas/Plans"
-      post: 
-        tags: 
-          - "Meal Plans"
-        description: "Add a meal plan to a specific meal recipe"
-        summary: "Add mealplan"
-        security: 
-          - 
-            BearerAuth: []
-        parameters: 
-          - 
-            $ref: "#/components/parameters/user_id"
-          - 
-            $ref: "#/components/parameters/mealplan_id"
-        requestBody: 
-          description: "Enter the details of the meal plan to be added"
-          content: 
-            application/json: 
-              schema: 
-                $ref: "#/components/schemas/BasePlan"
-        responses: 
-          200: 
-            description: "OK"
-            content: 
-              application/json: 
-                schema: 
-                  type: "string"
-    /users/{user_id}/meals/{mealplan_id}/plans/{plan_id}: 
-      get: 
-        tags: 
-          - "Meal Plans"
-        description: "Get a specific meal plan from a meal recipe"
-        summary: "Get meal plan"
-        parameters: 
-          - 
-            $ref: "#/components/parameters/user_id"
-          - 
-            $ref: "#/components/parameters/mealplan_id"
-          - 
-            $ref: "#/components/parameters/plan_id"
-        responses: 
-          200: 
-            description: "OK"
-            content: 
-              application/json: 
-                schema: 
+    post:
+      tags:
+        - "Meals"
+      description: "Add a meal recipe to a user's account"
+      summary: "Add meal"
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/user_id"
+      requestBody:
+        description: "Enter the details of meal"
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BaseMeal"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                properties:
+                  msg:
+                    type: "string"
+  /users/{user_id}/meals/{mealplan_id}:
+    get:
+      tags:
+        - "Meals"
+      description: "Get a the specific meal recipe"
+      summary: "Get meal recipe"
+      parameters:
+        - $ref: "#/components/parameters/user_id"
+        - $ref: "#/components/parameters/mealplan_id"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Meals"
+    patch:
+      tags:
+        - "Meals"
+      description: "Update a specific meal recipe"
+      summary: "Update meal recipe"
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/user_id"
+        - $ref: "#/components/parameters/mealplan_id"
+      requestBody:
+        description: "Enter the new name of the meal recipe"
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BaseMeal"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "string"
+    delete:
+      tags:
+        - "Meals"
+      description: "Delete a specific meal recipe"
+      summary: "Delete meal recipe"
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/user_id"
+        - $ref: "#/components/parameters/mealplan_id"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "string"
+  /users/{user_id}/meals/{mealplan_id}/download:
+    get:
+      tags:
+        - "Save"
+      description: "Download a meal recipe as pdf to your computer"
+      summary: "Download meal recipe"
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/user_id"
+        - $ref: "#/components/parameters/mealplan_id"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/pdf:
+              schema:
+                type: "string"
+                format: "binary"
+  /users/{user_id}/meals/{mealplan_id}/plans:
+    get:
+      tags:
+        - "Meal Plans"
+      description: "Get a the meal plan in a particular meal recipe"
+      summary: "Get mealplans"
+      parameters:
+        - $ref: "#/components/parameters/user_id"
+        - $ref: "#/components/parameters/mealplan_id"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
                   $ref: "#/components/schemas/Plans"
-      patch: 
-        tags: 
-          - "Meal Plans"
-        description: "Update a meal plan from a meal recipe"
-        summary: "Update meal plan"
-        security: 
-          - 
-            BearerAuth: []
-        parameters: 
-          - 
-            $ref: "#/components/parameters/user_id"
-          - 
-            $ref: "#/components/parameters/mealplan_id"
-          - 
-            $ref: "#/components/parameters/plan_id"
-        requestBody: 
-          description: "Enter the updated values of your meal plan"
-          content: 
-            application/json: 
-              schema: 
-                $ref: "#/components/schemas/SpecPlan"
-        responses: 
-          200: 
-            description: "OK"
-            content: 
-              application/json: 
-                schema: 
-                  type: "string"
-      delete: 
-        tags: 
-          - "Meal Plans"
-        description: "Update a meal plan from a meal recipe"
-        summary: "Update meal plan"
-        security: 
-          - 
-            BearerAuth: []
-        parameters: 
-          - 
-            $ref: "#/components/parameters/user_id"
-          - 
-            $ref: "#/components/parameters/mealplan_id"
-          - 
-            $ref: "#/components/parameters/plan_id"
-        responses: 
-          200: 
-            description: "OK"
-            content: 
-              application/json: 
-                schema: 
-                  type: "string"
-  components: 
-    schemas: 
-      Users: 
-        type: "object"
-        properties: 
-          id: 
-            type: "integer"
-            format: "int32"
-          firstName: 
-            type: "string"
-          lastName: 
-            type: "string"
-          email: 
-            type: "string"
-            format: "email"
-          dateCreated: 
-            type: "string"
-            format: "date"
-      Meals: 
-        type: "object"
-        properties: 
-          id: 
-            type: "integer"
-            format: "int32"
-          name: 
-            type: "string"
-          introduction: 
-            type: "string"
-            format: "text"
-          user: 
-            $ref: "#/components/schemas/Users"
-      Plans: 
-        type: "object"
-        properties: 
-          id: 
-            type: "integer"
-            format: "int32"
-          week: 
-            type: "string"
-          day: 
-            type: "string"
-          breakfast: 
-            type: "string"
-          lunch: 
-            type: "string"
-          snack: 
-            type: "string"
-          dinner: 
-            type: "string"
-          dateCreated: 
-            type: "string"
-            format: "date"
-          mealPlan: 
-            $ref: "#/components/schemas/Meals"
-      SpecPlan: 
-        type: "object"
-        properties: 
-          breakfast: 
-            type: "string"
-          lunch: 
-            type: "string"
-          snack: 
-            type: "string"
-          dinner: 
-            type: "string"
-      Login: 
-        type: "object"
-        required: 
-          - "email"
-          - "password"
-        properties: 
-          email: 
-            type: "string"
-            format: "email"
-          password: 
-            type: "string"
-            format: "password"
-      BaseUser: 
-        type: "object"
-        required: 
-          - "email"
-          - "password"
-          - "firstName"
-          - "lastName"
-        properties: 
-          email: 
-            type: "string"
-            format: "email"
-          password: 
-            type: "string"
-            format: "password"
-          firstName: 
-            type: "string"
-          lastName: 
-            type: "string"
-      BaseMeal: 
-        type: "object"
-        required: 
-          - "name"
-        properties: 
-          name: 
-            type: "string"
-          introduction: 
-            type: "string"
-            format: "text"
-      BasePlan: 
-        type: "object"
-        required: 
-          - "week"
-          - "day"
-        properties: 
-          week: 
-            type: "string"
-          day: 
-            type: "string"
-          breakfast: 
-            type: "string"
-          lunch: 
-            type: "string"
-          snack: 
-            type: "string"
-          dinner: 
-            type: "string"
-      Token: 
-        type: "object"
-        properties: 
-          msg: 
-            type: "string"
-          access token: 
-            type: "string"
-          refresh token: 
-            type: "string"
-      RefreshToken: 
-        type: "object"
-        properties: 
-          msg: 
-            type: "string"
-          access token: 
-            type: "string"
-    parameters: 
-      user_id: 
-        description: "User ID"
-        name: "user_id"
-        in: "path"
-        required: true
-        schema: 
+    post:
+      tags:
+        - "Meal Plans"
+      description: "Add a meal plan to a specific meal recipe"
+      summary: "Add mealplan"
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/user_id"
+        - $ref: "#/components/parameters/mealplan_id"
+      requestBody:
+        description: "Enter the details of the meal plan to be added"
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BasePlan"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "string"
+  /users/{user_id}/meals/{mealplan_id}/plans/{plan_id}:
+    get:
+      tags:
+        - "Meal Plans"
+      description: "Get a specific meal plan from a meal recipe"
+      summary: "Get meal plan"
+      parameters:
+        - $ref: "#/components/parameters/user_id"
+        - $ref: "#/components/parameters/mealplan_id"
+        - $ref: "#/components/parameters/plan_id"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Plans"
+    patch:
+      tags:
+        - "Meal Plans"
+      description: "Update a meal plan from a meal recipe"
+      summary: "Update meal plan"
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/user_id"
+        - $ref: "#/components/parameters/mealplan_id"
+        - $ref: "#/components/parameters/plan_id"
+      requestBody:
+        description: "Enter the updated values of your meal plan"
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SpecPlan"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "string"
+    delete:
+      tags:
+        - "Meal Plans"
+      description: "Delete a meal plan from a meal recipe"
+      summary: "Delete meal plan"
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/user_id"
+        - $ref: "#/components/parameters/mealplan_id"
+        - $ref: "#/components/parameters/plan_id"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "string"
+components:
+  schemas:
+    Users:
+      type: "object"
+      properties:
+        id:
           type: "integer"
           format: "int32"
-      mealplan_id: 
-        name: "mealplan_id"
-        description: "MealPlan ID"
-        required: true
-        schema: 
+        firstName:
+          type: "string"
+        lastName:
+          type: "string"
+        email:
+          type: "string"
+          format: "email"
+        dateCreated:
+          type: "string"
+          format: "date"
+    Meals:
+      type: "object"
+      properties:
+        id:
           type: "integer"
           format: "int32"
-        in: "path"
-      plan_id: 
-        name: "plan_id"
-        description: "Plan ID"
-        required: true
-        schema: 
+        name:
+          type: "string"
+        introduction:
+          type: "string"
+          format: "text"
+        user:
+          $ref: "#/components/schemas/Users"
+    Plans:
+      type: "object"
+      properties:
+        id:
           type: "integer"
           format: "int32"
-        in: "path"
-    securitySchemes: 
-      BearerAuth: 
-        type: "http"
-        scheme: "bearer"
-
+        week:
+          type: "string"
+        day:
+          type: "string"
+        breakfast:
+          type: "string"
+        lunch:
+          type: "string"
+        snack:
+          type: "string"
+        dinner:
+          type: "string"
+        dateCreated:
+          type: "string"
+          format: "date"
+        mealPlan:
+          $ref: "#/components/schemas/Meals"
+    SpecPlan:
+      type: "object"
+      properties:
+        breakfast:
+          type: "string"
+        lunch:
+          type: "string"
+        snack:
+          type: "string"
+        dinner:
+          type: "string"
+    Login:
+      type: "object"
+      required:
+        - "email"
+        - "password"
+      properties:
+        email:
+          type: "string"
+          format: "email"
+        password:
+          type: "string"
+          format: "password"
+    BaseUser:
+      type: "object"
+      required:
+        - "email"
+        - "password"
+        - "firstName"
+        - "lastName"
+      properties:
+        email:
+          type: "string"
+          format: "email"
+        password:
+          type: "string"
+          format: "password"
+        firstName:
+          type: "string"
+        lastName:
+          type: "string"
+    BaseMeal:
+      type: "object"
+      required:
+        - "name"
+      properties:
+        name:
+          type: "string"
+        introduction:
+          type: "string"
+          format: "text"
+    BasePlan:
+      type: "object"
+      required:
+        - "week"
+        - "day"
+      properties:
+        week:
+          type: "string"
+        day:
+          type: "string"
+        breakfast:
+          type: "string"
+        lunch:
+          type: "string"
+        snack:
+          type: "string"
+        dinner:
+          type: "string"
+    Token:
+      type: "object"
+      properties:
+        msg:
+          type: "string"
+        access token:
+          type: "string"
+        refresh token:
+          type: "string"
+    RefreshToken:
+      type: "object"
+      properties:
+        msg:
+          type: "string"
+        access token:
+          type: "string"
+  parameters:
+    user_id:
+      description: "User ID"
+      name: "user_id"
+      in: "path"
+      required: true
+      schema:
+        type: "integer"
+        format: "int32"
+    mealplan_id:
+      name: "mealplan_id"
+      description: "MealPlan ID"
+      required: true
+      schema:
+        type: "integer"
+        format: "int32"
+      in: "path"
+    plan_id:
+      name: "plan_id"
+      description: "Plan ID"
+      required: true
+      schema:
+        type: "integer"
+        format: "int32"
+      in: "path"
+  securitySchemes:
+    BearerAuth:
+      type: "http"
+      scheme: "bearer"

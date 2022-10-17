@@ -402,8 +402,8 @@ def specMeal(user_id, mealplan_id):
             """
                 @api [delete] /users/{user_id}/meals/{mealplan_id}
                 tags: [Meals]
-                description: Update a specific meal recipe
-                summary: Update meal recipe
+                description: Delete a specific meal recipe
+                summary: Delete meal recipe
                 security: [{BearerAuth: []}]
                 parameters:
                     - "$ref": "#/components/parameters/user_id"
@@ -577,8 +577,8 @@ def specPlan(user_id, mealplan_id, plan_id):
             """
                 @api [delete] /users/{user_id}/meals/{mealplan_id}/plans/{plan_id}
                 tags: [Meal Plans]
-                description: Update a meal plan from a meal recipe
-                summary: Update meal plan
+                description: Delete a meal plan from a meal recipe
+                summary: Delete meal plan
                 security: [{BearerAuth: []}]
                 parameters:
                     - "$ref": "#/components/parameters/user_id"
