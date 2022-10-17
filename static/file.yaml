@@ -438,6 +438,8 @@ components:
         dateCreated:
           type: "string"
           format: "date"
+        mealPlan:
+          $ref: "#/components/schemas/Meals"
     SpecPlan:
       type: "object"
       properties:

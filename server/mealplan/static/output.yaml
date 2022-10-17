@@ -144,7 +144,11 @@
           content: 
             application/json: 
               schema: 
-                $ref: "#/components/schemas/Users"
+                properties: 
+                  firstName: 
+                    type: "string"
+                  lastName: 
+                    type: "string"
         responses: 
           200: 
             description: "OK"

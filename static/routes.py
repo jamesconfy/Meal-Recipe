@@ -201,7 +201,11 @@ def user(user_id):
                     content:
                         application/json:
                             schema:
-                                "$ref": "#/components/schemas/Users"   
+                                properties:
+                                    firstName:
+                                        type: string
+                                    lastName:
+                                        type: string 
                 responses:
                     200:
                         description: OK
@@ -277,7 +281,8 @@ def meals(user_id):
                             schema:
                                 type: array
                                 items:
-                                    "$ref": "#/components/schemas/Meals"                                    
+                                    
+                                    "$ref": "#/components/schemas/Meals"                      
         """
         plans = MealPlan.query.filter_by(user_id=user_id).all()
         if plans:
@@ -352,6 +357,7 @@ def specMeal(user_id, mealplan_id):
                         application/json:
                             schema:
                                 "$ref": "#/components/schemas/Meals"
+                                
         """
         return jsonify(mealplan_schema.dump(meal))
 
