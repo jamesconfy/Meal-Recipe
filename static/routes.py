@@ -27,21 +27,6 @@ meals_schema = MealSchema(many=True)
 @app.route('/home')
 def home():
     #return render_template("layout.html")
-    """
-        @api [get] /home
-        tags: [Default]
-        summary: Home route
-        description: Returns JSON if site is up and running
-        responses:
-            200:
-                description: OK!
-                content:
-                    application/json:
-                        schema:
-                            properties:
-                                value:
-                                    type: string 
-    """
     return jsonify('Home alone again!')
 
 

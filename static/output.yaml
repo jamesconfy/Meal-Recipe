@@ -9,8 +9,6 @@ info:
     email: "bobdence@gmail.com"
     url: "https://github.com/jamesconfy"
 tags:
-  - name: "Default"
-    description: "Default route"
   - name: "Users"
     description: "Manages everything concerning users info"
   - name: "Meals"
@@ -18,21 +16,6 @@ tags:
   - name: "Meal Plans"
     description: "Manages the meal schedule you have for each day"
 paths:
-  /home:
-    get:
-      tags:
-        - "Default"
-      summary: "Home route"
-      description: "Returns JSON if site is up and running"
-      responses:
-        200:
-          description: "OK!"
-          content:
-            application/json:
-              schema:
-                properties:
-                  value:
-                    type: "string"
   /login:
     post:
       tags:
