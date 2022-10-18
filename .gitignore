@@ -132,3 +132,4 @@ dmypy.json
 *example.py
 *.DS_Store
 *.dockerignore
+*.firebase
