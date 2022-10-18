@@ -1,10 +1,11 @@
-import json
+# import json
 from datetime import timedelta
 
 import pdfkit
 from flask import abort
 from flask import current_app as app
-from flask import jsonify, make_response, render_template, request
+from flask import (jsonify, make_response, redirect, render_template, request,
+                   url_for)
 from flask_jwt_extended import (create_access_token, create_refresh_token,
                                 current_user, jwt_required,
                                 verify_jwt_in_request)
@@ -26,6 +27,7 @@ meals_schema = MealSchema(many=True)
 @app.route('/')
 @app.route('/home')
 def home():
+    # return redirect('/swagger')
     return jsonify('Home alone again!')
 
 @app.route('/register', methods=['POST'])
@@ -340,7 +342,7 @@ def handle_exception(e):
     # start with the correct headers and status code from the error
     response = e.get_response()
     # replace the body with JSON
-    response.data = json.dumps({
+    response.data = jsonify({
         "code": e.code,
         "name": e.name,
         "message": e.description
