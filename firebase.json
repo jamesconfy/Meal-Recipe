@@ -1,0 +1,13 @@
+{
+  "hosting": {
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      {
+        "source": "**",
+        "run": {
+          "serviceId": "meal-recipe"
+        }
+      }
+    ]
+  }
+}
