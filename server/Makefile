@@ -6,8 +6,7 @@ install:
 	pip install -r requirements.txt
 
 run:
-	cd /server
-	gunicorn --bind 0.0.0.0:80 run:app
+	gunicorn --bind :5000 --workers 1 --threads 8 --timeout 0 run:app
 
 migration:
 	# Uncomment out this line if you do not have migration folder already
